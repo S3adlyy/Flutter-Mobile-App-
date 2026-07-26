@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'welcome_page.dart';
 import 'manage_employees_page.dart';
+import 'inventory_dashboard_page.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -43,6 +44,15 @@ class AdminDashboard extends StatelessWidget {
             Text('Welcome, ${auth.userModel?.name ?? 'Admin'}',
                 style: AppText.body.copyWith(color: AppColors.taupe)),
             const SizedBox(height: 20),
+            _DashboardTile(
+              icon: Icons.inventory_2_rounded,
+              label: 'Inventory',
+              subtitle: 'Products, stock levels, and analytics',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const InventoryDashboardPage()),
+              ),
+            ),
             _DashboardTile(
               icon: Icons.people_alt_rounded,
               label: 'Manage Employees',
