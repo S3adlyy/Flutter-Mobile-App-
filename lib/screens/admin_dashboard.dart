@@ -5,6 +5,8 @@ import '../theme/app_theme.dart';
 import 'welcome_page.dart';
 import 'manage_employees_page.dart';
 import 'inventory_dashboard_page.dart';
+import 'add_purchase_page.dart';
+import 'purchase_history_page.dart';
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -54,6 +56,12 @@ class AdminDashboard extends StatelessWidget {
               ),
             ),
             _DashboardTile(
+              icon: Icons.shopping_cart_rounded,
+              label: 'Purchase Management',
+              subtitle: 'Record supplier purchases and view history',
+              onTap: () => _showPurchaseOptions(context),
+            ),
+            _DashboardTile(
               icon: Icons.people_alt_rounded,
               label: 'Manage Employees',
               subtitle: 'Add, view, and promote employees',
@@ -78,6 +86,76 @@ class AdminDashboard extends StatelessWidget {
                 const SnackBar(content: Text('Shop data — coming soon')),
               ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showPurchaseOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              height: 4,
+              width: 40,
+              decoration: BoxDecoration(
+                color: AppColors.taupe,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 16),
+            ListTile(
+              leading: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  gradient: AppColors.heroGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.add_shopping_cart, color: Colors.white, size: 22),
+              ),
+              title: Text('New Purchase', style: AppText.label.copyWith(fontSize: 15)),
+              subtitle: Text('Record a new supplier purchase',
+                  style: AppText.body.copyWith(fontSize: 12.5)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddPurchasePage()),
+                );
+              },
+            ),
+            ListTile(
+              leading: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.fieldFill,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.taupe.withOpacity(0.2)),
+                ),
+                child: const Icon(Icons.history_rounded, color: AppColors.ink, size: 22),
+              ),
+              title: Text('Purchase History', style: AppText.label.copyWith(fontSize: 15)),
+              subtitle: Text('View and manage past purchases',
+                  style: AppText.body.copyWith(fontSize: 12.5)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PurchaseHistoryPage()),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),

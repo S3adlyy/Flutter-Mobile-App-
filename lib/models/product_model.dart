@@ -26,6 +26,10 @@ class ProductModel {
   final String lastModifiedBy;
   final bool isArchived;
 
+  // NEW FIELDS for purchase tracking
+  final int totalPurchased;
+  final double averagePurchasePrice;
+
   const ProductModel({
     required this.id,
     required this.barcode,
@@ -48,6 +52,8 @@ class ProductModel {
     required this.createdBy,
     required this.lastModifiedBy,
     this.isArchived = false,
+    this.totalPurchased = 0,
+    this.averagePurchasePrice = 0,
   });
 
   // ---------- Computed / derived fields ----------
@@ -117,6 +123,8 @@ class ProductModel {
       createdBy: map['createdBy'] ?? '',
       lastModifiedBy: map['lastModifiedBy'] ?? '',
       isArchived: map['isArchived'] ?? false,
+      totalPurchased: (map['totalPurchased'] ?? 0) as int,
+      averagePurchasePrice: (map['averagePurchasePrice'] ?? 0).toDouble(),
     );
   }
 
@@ -142,6 +150,8 @@ class ProductModel {
       'createdBy': createdBy,
       'lastModifiedBy': lastModifiedBy,
       'isArchived': isArchived,
+      'totalPurchased': totalPurchased,
+      'averagePurchasePrice': averagePurchasePrice,
     };
   }
 
@@ -162,6 +172,8 @@ class ProductModel {
     String? imageUrl,
     String? lastModifiedBy,
     bool? isArchived,
+    int? totalPurchased,
+    double? averagePurchasePrice,
   }) {
     return ProductModel(
       id: id,
@@ -185,6 +197,8 @@ class ProductModel {
       createdBy: createdBy,
       lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
       isArchived: isArchived ?? this.isArchived,
+      totalPurchased: totalPurchased ?? this.totalPurchased,
+      averagePurchasePrice: averagePurchasePrice ?? this.averagePurchasePrice,
     );
   }
 }

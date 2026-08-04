@@ -7,12 +7,7 @@ class ProductRepository {
   CollectionReference<Map<String, dynamic>> get _productsRef =>
       _firestore.collection('products');
 
-  /// Real-time stream of all non-archived products. This is what powers
-  /// the dashboard, the product list, and search — one stream, filtered
-  /// client-side for the small catalog sizes this app targets. If your
-  /// catalog grows past a few thousand SKUs, move the heavier aggregates
-  /// (totals, sums) to a Cloud Function that maintains a summary doc
-  /// instead of recomputing from the full stream on every client.
+  /// Real-time stream of all non-archived products.
   Stream<List<ProductModel>> watchActiveProducts() {
     return _productsRef
         .where('isArchived', isEqualTo: false)
@@ -56,8 +51,7 @@ class ProductRepository {
     await _productsRef.doc(id).update(changes);
   }
 
-  /// Soft delete — keeps the record (and its history) but hides it from
-  /// normal views. Matches the spec's "Archive" + "Restore" requirement.
+  /// Soft delete — keeps the record but hides it from normal views.
   Future<void> archiveProduct(String id) async {
     await _productsRef.doc(id).update({'isArchived': true});
   }
@@ -66,8 +60,7 @@ class ProductRepository {
     await _productsRef.doc(id).update({'isArchived': false});
   }
 
-  /// Hard delete — only for genuinely removing bad data. Prefer archive
-  /// for normal "remove this product" actions.
+  /// Hard delete — only for genuinely removing bad data.
   Future<void> deleteProductPermanently(String id) async {
     await _productsRef.doc(id).delete();
   }
@@ -82,5 +75,63 @@ class ProductRepository {
       'lastUpdated': FieldValue.serverTimestamp(),
       'lastModifiedBy': modifiedBy,
     });
+  }
+
+  // NEW METHODS for purchase management
+
+  /// Get products by supplier
+  Future<List<ProductModel>> getProductsBySupplier(String supplierId) async {
+    final snap = await _productsRef
+        .where('supplier', isEqualTo: supplierId)
+        .where('isArchived', isEqualTo: false)
+        .get();
+    return snap.docs
+        .map((d) => ProductModel.fromMap(d.data(), d.id))
+        .toList();
+  }
+
+  /// Update product with purchase data
+  Future<void> updateProductPurchaseData(String productId, {
+    required int quantityAdded,
+    required double pricePerPiece,
+  }) async {
+    final product = await getProduct(productId);
+    if (product == null) return;
+
+    final newTotalPurchased = product.totalPurchased + quantityAdded;
+    final newAveragePrice = product.totalPurchased > 0
+        ? ((product.averagePurchasePrice * product.totalPurchased) + (pricePerPiece * quantityAdded)) / newTotalPurchased
+        : pricePerPiece;
+
+    await _productsRef.doc(productId).update({
+      'totalPurchased': newTotalPurchased,
+      'averagePurchasePrice': newAveragePrice,
+      'lastUpdated': FieldValue.serverTimestamp(),
+    });
+  }
+
+  /// Get all products with low stock
+  Future<List<ProductModel>> getLowStockProducts() async {
+    final snap = await _productsRef
+        .where('isArchived', isEqualTo: false)
+        .get();
+
+    return snap.docs
+        .map((d) => ProductModel.fromMap(d.data(), d.id))
+        .where((p) => p.stockStatus == StockStatus.low || p.stockStatus == StockStatus.critical)
+        .toList();
+  }
+
+  /// Get products expiring soon
+  Future<List<ProductModel>> getExpiringSoonProducts() async {
+    final snap = await _productsRef
+        .where('isArchived', isEqualTo: false)
+        .get();
+
+    return snap.docs
+        .map((d) => ProductModel.fromMap(d.data(), d.id))
+        .where((p) => p.expirationStatus == ExpirationStatus.warning ||
+        p.expirationStatus == ExpirationStatus.critical)
+        .toList();
   }
 }

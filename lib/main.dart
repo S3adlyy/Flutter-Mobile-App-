@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/product_provider.dart';
+import 'providers/purchase_provider.dart';
 import 'widgets/role_guard.dart';
 
 void main() async {
@@ -23,6 +24,7 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
+        ChangeNotifierProvider(create: (_) => PurchaseProvider()),
       ],
       child: MaterialApp(
         title: 'Shop Management',
@@ -38,11 +40,8 @@ class MyApp extends StatelessWidget {
           colorSchemeSeed: const Color(0xFFFF5F2E),
           brightness: Brightness.dark,
         ),
-        // RoleGuard checks auth + role on every cold start and routes
-        // to WelcomePage, AdminDashboard, or EmployeeHomePage accordingly.
         home: const RoleGuard(),
       ),
     );
   }
 }
-
