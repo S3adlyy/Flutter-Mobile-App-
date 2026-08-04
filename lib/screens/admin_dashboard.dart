@@ -4,9 +4,12 @@ import '../providers/auth_provider.dart';
 import '../theme/app_theme.dart';
 import 'welcome_page.dart';
 import 'manage_employees_page.dart';
+import 'manage_clients_page.dart';
 import 'inventory_dashboard_page.dart';
 import 'add_purchase_page.dart';
 import 'purchase_history_page.dart';
+import 'add_sale_page.dart';
+import 'sale_history_page.dart'; // Add this import
 
 class AdminDashboard extends StatelessWidget {
   const AdminDashboard({super.key});
@@ -46,6 +49,8 @@ class AdminDashboard extends StatelessWidget {
             Text('Welcome, ${auth.userModel?.name ?? 'Admin'}',
                 style: AppText.body.copyWith(color: AppColors.taupe)),
             const SizedBox(height: 20),
+
+            // Inventory
             _DashboardTile(
               icon: Icons.inventory_2_rounded,
               label: 'Inventory',
@@ -55,12 +60,24 @@ class AdminDashboard extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const InventoryDashboardPage()),
               ),
             ),
+
+            // Sales Management
+            _DashboardTile(
+              icon: Icons.sell_rounded,
+              label: 'Sales Management',
+              subtitle: 'Record sales, manage clients, view history',
+              onTap: () => _showSaleOptions(context),
+            ),
+
+            // Purchase Management
             _DashboardTile(
               icon: Icons.shopping_cart_rounded,
               label: 'Purchase Management',
               subtitle: 'Record supplier purchases and view history',
               onTap: () => _showPurchaseOptions(context),
             ),
+
+            // Manage Employees
             _DashboardTile(
               icon: Icons.people_alt_rounded,
               label: 'Manage Employees',
@@ -70,6 +87,19 @@ class AdminDashboard extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const ManageEmployeesPage()),
               ),
             ),
+
+            // Manage Clients
+            _DashboardTile(
+              icon: Icons.people_rounded,
+              label: 'Manage Clients',
+              subtitle: 'Add, view, and manage clients',
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const ManageClientsPage()),
+              ),
+            ),
+
+            // Sales Reports (Coming Soon)
             _DashboardTile(
               icon: Icons.bar_chart_rounded,
               label: 'Sales Reports',
@@ -78,14 +108,101 @@ class AdminDashboard extends StatelessWidget {
                 const SnackBar(content: Text('Sales reports — coming soon')),
               ),
             ),
-            _DashboardTile(
-              icon: Icons.storefront_rounded,
-              label: 'Shop Data',
-              subtitle: 'Manage inventory and shop settings',
-              onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Shop data — coming soon')),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showSaleOptions(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 8),
+            Container(
+              height: 4,
+              width: 40,
+              decoration: BoxDecoration(
+                color: AppColors.taupe,
+                borderRadius: BorderRadius.circular(2),
               ),
             ),
+            const SizedBox(height: 16),
+            // New Sale
+            ListTile(
+              leading: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  gradient: AppColors.heroGradient,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.add_shopping_cart, color: Colors.white, size: 22),
+              ),
+              title: Text('New Sale', style: AppText.label.copyWith(fontSize: 15)),
+              subtitle: Text('Record a new client sale',
+                  style: AppText.body.copyWith(fontSize: 12.5)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const AddSalePage()),
+                );
+              },
+            ),
+            // Manage Clients
+            ListTile(
+              leading: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.fieldFill,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.taupe.withOpacity(0.2)),
+                ),
+                child: const Icon(Icons.people_rounded, color: AppColors.ink, size: 22),
+              ),
+              title: Text('Manage Clients', style: AppText.label.copyWith(fontSize: 15)),
+              subtitle: Text('Add, view, and manage clients',
+                  style: AppText.body.copyWith(fontSize: 12.5)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ManageClientsPage()),
+                );
+              },
+            ),
+            // Sales History
+            ListTile(
+              leading: Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.fieldFill,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.taupe.withOpacity(0.2)),
+                ),
+                child: const Icon(Icons.history_rounded, color: AppColors.ink, size: 22),
+              ),
+              title: Text('Sales History', style: AppText.label.copyWith(fontSize: 15)),
+              subtitle: Text('View and manage past sales',
+                  style: AppText.body.copyWith(fontSize: 12.5)),
+              onTap: () {
+                Navigator.pop(ctx);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const SaleHistoryPage()),
+                );
+              },
+            ),
+            const SizedBox(height: 16),
           ],
         ),
       ),
@@ -112,6 +229,7 @@ class AdminDashboard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16),
+            // New Purchase
             ListTile(
               leading: Container(
                 height: 44,
@@ -133,6 +251,7 @@ class AdminDashboard extends StatelessWidget {
                 );
               },
             ),
+            // Purchase History
             ListTile(
               leading: Container(
                 height: 44,
