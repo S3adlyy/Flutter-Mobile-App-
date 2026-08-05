@@ -184,13 +184,18 @@ class SaleRepository {
 
   /// Get all clients
   Future<List<ClientModel>> getAllClients() async {
-    final snap = await _clientsRef
-        .where('isActive', isEqualTo: true)
-        .orderBy('name')
-        .get();
-    return snap.docs
-        .map((d) => ClientModel.fromMap(d.data(), d.id))
-        .toList();
+    try {
+      final snap = await _clientsRef.get();
+      final clients = snap.docs
+          .map((d) => ClientModel.fromMap(d.data(), d.id))
+          .toList();
+      final activeClients = clients.where((c) => c.isActive == true).toList();
+      activeClients.sort((a, b) => a.name.compareTo(b.name));
+      return activeClients;
+    } catch (e) {
+      print('Error getting clients: $e');
+      return [];
+    }
   }
 
   /// Get a client by ID
@@ -206,9 +211,27 @@ class SaleRepository {
     return doc.id;
   }
 
-  /// Update a client
-  Future<void> updateClient(String id, Map<String, dynamic> changes) async {
-    await _clientsRef.doc(id).update(changes);
+  /// Update a client - FIXED
+  Future<void> updateClient(String id, ClientModel client) async {
+    await _clientsRef.doc(id).update({
+      'name': client.name,
+      'phone': client.phone,
+      'email': client.email,
+      'address': client.address,
+      'taxId': client.taxId,
+    });
+  }
+
+  /// Delete a client (soft delete - set isActive to false) - FIXED
+  Future<void> deleteClient(String id) async {
+    await _clientsRef.doc(id).update({
+      'isActive': false,
+    });
+  }
+
+  /// Permanently delete a client - FIXED
+  Future<void> permanentlyDeleteClient(String id) async {
+    await _clientsRef.doc(id).delete();
   }
 
   /// Get total sales value over a period

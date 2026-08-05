@@ -49,16 +49,18 @@ class SaleProvider extends ChangeNotifier {
       notifyListeners();
     });
 
+    // Load clients immediately
     _loadClients();
   }
 
-  /// Load clients - MAKE THIS PUBLIC
+  /// Load clients - public method that triggers UI update
   Future<void> loadClients() async {
     _isLoading = true;
     notifyListeners();
 
     try {
-      _clients = await _saleRepository.getAllClients();
+      final clients = await _saleRepository.getAllClients();
+      _clients = clients;
       _isLoading = false;
       notifyListeners();
     } catch (e) {
@@ -71,7 +73,8 @@ class SaleProvider extends ChangeNotifier {
   /// Private method for internal use
   Future<void> _loadClients() async {
     try {
-      _clients = await _saleRepository.getAllClients();
+      final clients = await _saleRepository.getAllClients();
+      _clients = clients;
       notifyListeners();
     } catch (e) {
       _errorMessage = e.toString();
@@ -79,9 +82,9 @@ class SaleProvider extends ChangeNotifier {
     }
   }
 
-  /// Refresh clients - MAKE THIS PUBLIC
+  /// Refresh clients - alias for loadClients
   Future<void> refreshClients() async {
-    await _loadClients();
+    await loadClients();
   }
 
   /// Refresh sales
@@ -205,7 +208,7 @@ class SaleProvider extends ChangeNotifier {
     }
   }
 
-  /// Create a new client - FIXED to properly refresh clients
+  /// Create a new client - FIXED with proper UI update
   Future<String?> createClient({
     required String name,
     required String phone,
@@ -231,7 +234,7 @@ class SaleProvider extends ChangeNotifier {
 
       final id = await _saleRepository.createClient(client);
 
-      // Reload clients to get the new list
+      // IMPORTANT: Reload clients after creating a new one
       await _loadClients();
 
       _isLoading = false;

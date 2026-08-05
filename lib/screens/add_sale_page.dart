@@ -39,6 +39,7 @@ class _AddSalePageState extends State<AddSalePage> {
   @override
   void initState() {
     super.initState();
+    // Load clients when the page opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<SaleProvider>().loadClients();
     });

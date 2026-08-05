@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../models/client_model.dart';
 import '../providers/sale_provider.dart';
+import '../repositories/sale_repository.dart';
 import '../theme/app_theme.dart';
 
 /// Admin-only screen for managing clients.
-/// Allows adding, editing, and viewing clients.
 class ManageClientsPage extends StatefulWidget {
   const ManageClientsPage({super.key});
 
@@ -26,7 +26,7 @@ class _ManageClientsPageState extends State<ManageClientsPage> {
   Future<void> _loadClients() async {
     setState(() => _isLoading = true);
     final saleProvider = context.read<SaleProvider>();
-    await saleProvider.loadClients(); // Use the public method
+    await saleProvider.loadClients();
     if (mounted) {
       setState(() => _isLoading = false);
     }
@@ -253,7 +253,6 @@ class _ManageClientsPageState extends State<ManageClientsPage> {
 
               if (clientId != null) {
                 Navigator.pop(ctx);
-                // Refresh the clients list after adding
                 await _loadClients();
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -371,16 +370,39 @@ class _ManageClientsPageState extends State<ManageClientsPage> {
             onPressed: () async {
               if (!formKey.currentState!.validate()) return;
 
-              // Note: For now we're just showing a success message
-              // You'll need to add an updateClient method to SaleRepository
-              Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Client updated successfully!'),
-                  backgroundColor: Colors.green,
-                ),
-              );
-              await _loadClients();
+              try {
+                final saleRepository = SaleRepository();
+                final updatedClient = client.copyWith(
+                  name: nameController.text.trim(),
+                  phone: phoneController.text.trim(),
+                  email: emailController.text.trim().isEmpty
+                      ? null
+                      : emailController.text.trim(),
+                  address: addressController.text.trim().isEmpty
+                      ? null
+                      : addressController.text.trim(),
+                  taxId: taxIdController.text.trim().isEmpty
+                      ? null
+                      : taxIdController.text.trim(),
+                );
+                await saleRepository.updateClient(client.id, updatedClient);
+
+                Navigator.pop(ctx);
+                await _loadClients();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Client updated successfully!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to update client: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.amber,
@@ -443,8 +465,7 @@ class _ManageClientsPageState extends State<ManageClientsPage> {
         title: const Text('Delete Client?'),
         content: Text(
           'Are you sure you want to delete "${client.name}"? '
-              'This action cannot be undone. The client will be deactivated '
-              'but their purchase history will remain.',
+              'This action cannot be undone.',
         ),
         actions: [
           TextButton(
@@ -453,16 +474,26 @@ class _ManageClientsPageState extends State<ManageClientsPage> {
           ),
           TextButton(
             onPressed: () async {
-              Navigator.pop(ctx);
-              // Note: You'll need to add a deleteClient method to SaleRepository
-              // For now, just show a message
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('${client.name} has been deactivated'),
-                  backgroundColor: Colors.orange,
-                ),
-              );
-              await _loadClients();
+              try {
+                final saleRepository = SaleRepository();
+                await saleRepository.deleteClient(client.id);
+
+                Navigator.pop(ctx);
+                await _loadClients();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('${client.name} has been deleted'),
+                    backgroundColor: Colors.orange,
+                  ),
+                );
+              } catch (e) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Failed to delete client: $e'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),
             child: const Text('Delete'),

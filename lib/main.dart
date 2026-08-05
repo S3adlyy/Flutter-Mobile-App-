@@ -26,7 +26,14 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => PurchaseProvider()),
-        ChangeNotifierProvider(create: (_) => SaleProvider()),
+        ChangeNotifierProvider(
+          create: (_) {
+            final provider = SaleProvider();
+            // Initialize the provider to load clients
+            provider.init();
+            return provider;
+          },
+        ),
       ],
       child: MaterialApp(
         title: 'Shop Management',
